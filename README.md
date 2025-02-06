@@ -30,6 +30,19 @@ Use SSH to connect to your droplet:
 ssh root@your_droplet_ip
 ```
 
+or you use vscode to connect to your droplet
+
+1. Install the Remote - SSH extension in Visual Studio Code.
+2. Click on the green button in the bottom left corner of the window.
+3. Open ssh configuration file and add the following configuration:
+
+```sh
+Host digitalocean
+    HostName your_droplet_ip
+    User root
+    IdentityFile ~/.ssh/id_rsa
+```
+
 ## Step 3: Update the System
 
 Update the package list and upgrade the system packages:
@@ -61,5 +74,3 @@ Install Composer:
 curl -sS https://getcomposer.org/installer | php
 mv composer.phar /usr/local/bin/composer
 ```
-
-
