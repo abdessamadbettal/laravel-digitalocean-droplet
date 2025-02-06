@@ -19,7 +19,7 @@ Before you begin, ensure you have the following:
 2. Click on the "Create" button and select "Droplets".
 3. Choose an image (Ubuntu 20.04 LTS is recommended).
 4. Select a plan based on your requirements.
-5. Add your SSH keys for secure access.
+5. Add your SSH keys for secure access (cat ~/.ssh/id_rsa.pub)
 6. Click "Create Droplet".
 
 ## Step 2: Connect to Your Droplet
@@ -51,9 +51,9 @@ Update the package list and upgrade the system packages:
 apt update && apt upgrade -y
 ```
 
-## Step 4: Install Required Packages
+## Step 4: Install Required Software 
 
-Install the required packages for Laravel:
+Install the required software for your Laravel application:
 
 ```sh
 apt install -y unzip curl git nginx mysql-server
@@ -68,9 +68,50 @@ apt update
 apt install -y php8.3 php8.3-cli php8.3-fpm php8.3-mbstring php8.3-xml php8.3-bcmath php8.3-curl php8.3-zip php8.3-mysql php8.3-tokenizer php8.3-intl
 ```
 
+check the php version:
+
+```sh
+php -v
+```
+
+
 Install Composer:
 
 ```sh
 curl -sS https://getcomposer.org/installer | php
 mv composer.phar /usr/local/bin/composer
 ```
+
+check the composer version:
+
+```sh
+composer --version
+```
+
+## Step 6: Configure MySQL
+
+Run the MySQL security script to improve security:
+
+```sh
+mysql_secure_installation
+```
+
+Create a new MySQL database and user:
+
+```sh
+mysql -u root -p
+```
+
+```sql
+CREATE DATABASE laravel;
+
+CREATE USER 'laravel'@'localhost' IDENTIFIED BY 'password';
+
+GRANT ALL PRIVILEGES ON laravel.* TO 'laravel'@'localhost';
+
+FLUSH PRIVILEGES;
+
+EXIT;
+```
+
+## Step 7: Install Laravel
