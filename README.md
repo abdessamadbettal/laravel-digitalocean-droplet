@@ -103,15 +103,98 @@ mysql -u root -p
 ```
 
 ```sql
-CREATE DATABASE laravel;
+CREATE DATABASE laravel_db;
 
-CREATE USER 'laravel'@'localhost' IDENTIFIED BY 'password';
+CREATE USER 'laravel_user'@'localhost' IDENTIFIED BY 'strongpassword';
 
-GRANT ALL PRIVILEGES ON laravel.* TO 'laravel'@'localhost';
+GRANT ALL PRIVILEGES ON laravel_db.* TO 'laravel_user'@'localhost';
 
 FLUSH PRIVILEGES;
 
 EXIT;
 ```
 
-## Step 7: Install Laravel
+## Step 7: clone your laravel project
+
+```sh
+git clone https://github.com/your-repo/laravel-app.git /var/www/laravel-app
+cd /var/www/laravel-app
+composer install --no-dev --optimize-autoloader
+cp .env.example .env
+```
+
+Edit the `.env` file with your database credentials:
+
+```sh
+nano .env
+```
+
+```sh
+APP_NAME="Laravel"
+APP_ENV=production
+APP_KEY=
+APP_DEBUG=false
+APP_URL=http://your_domain.com
+
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=laravel_db
+DB_USERNAME=laravel_user
+DB_PASSWORD=strongpassword
+```
+
+Generate the application key:
+
+```sh
+php artisan key:generate
+```
+
+## Step 8: Set permissions:
+
+```sh
+chown -R www-data:www-data /var/www/laravel-app
+chmod -R 775 /var/www/laravel-app/storage /var/www/laravel-app/bootstrap/cache
+```
+
+## Step 9: Configure Nginx
+
+Create a new Nginx server block configuration:
+
+```sh
+nano /etc/nginx/sites-available/laravel-app or code /etc/nginx/sites-available/laravel-app
+```
+
+Add the following configuration:
+
+```sh
+server {
+    listen 80;
+    server_name yourdomain.com;
+    root /var/www/laravel-app/public;
+    index index.php index.html index.htm index.nginx-debian.html;
+
+    location / {
+        try_files $uri /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+```
+
+Enable the site and restart Nginx:
+
+```sh
+ln -s /etc/nginx/sites-available/laravel /etc/nginx/sites-enabled/
+nginx -t
+systemctl restart nginx
+```
