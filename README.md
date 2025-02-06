@@ -198,3 +198,102 @@ ln -s /etc/nginx/sites-available/laravel /etc/nginx/sites-enabled/
 nginx -t
 systemctl restart nginx
 ```
+
+## Step 10: Install Node.js & Build Frontend
+
+Install Node.js:
+
+```sh
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt install -y nodejs
+```
+
+Install NPM packages and build the frontend:
+
+```sh
+npm install
+npm run build
+```
+
+## Step 11: Set Up Supervisor for Queue Workers (Optional)
+
+If your app uses queues, set up Supervisor:
+
+```sh
+apt install supervisor -y
+nano /etc/supervisor/conf.d/laravel-worker.conf
+```
+
+Add the following configuration:
+
+```sh
+[program:laravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/laravel-app/artisan queue:work --tries=3
+autostart=true
+autorestart=true
+numprocs=1
+redirect_stderr=true
+stdout_logfile=/var/log/laravel-worker.log
+```
+
+Restart Supervisor:
+
+```sh
+systemctl restart supervisor
+systemctl enable supervisor
+```
+
+## Step 12: Set Up SSL with Let's Encrypt
+
+Secure your app with HTTPS:
+
+```sh
+apt install certbot python3-certbot-nginx -y
+certbot --nginx -d yourdomain.com -d www.yourdomain.com
+```
+
+auto renew the ssl certificate:
+
+```sh
+echo "0 3 * * * certbot renew --quiet" | crontab -
+```
+
+## step 13: Set Up Deployment Script (Optional)
+
+To automate deployments, create a script:
+
+```sh
+nano /var/www/laravel-app/deploy.sh
+```
+
+Add the following script:
+
+```sh
+#!/bin/bash
+cd /var/www/laravel-app
+git pull origin main
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+npm run build
+php artisan cache:clear
+php artisan config:clear
+php artisan queue:restart
+systemctl restart nginx
+```
+
+Make the script executable:
+
+```sh
+chmod +x /var/www/laravel-app/deploy.sh
+```
+
+Run it:
+
+```sh
+sh /var/www/laravel-app/deploy.sh
+```
+
+## Conclusion
+
+Congratulations! You have successfully deployed your Laravel application to a DigitalOcean droplet. You can now access your app by visiting your domain in a web browser. If you encounter any issues, feel free to refer to the official Laravel documentation or DigitalOcean community for help.
